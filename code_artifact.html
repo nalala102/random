@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>두근두근 학생 제비뽑기</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter & Jua -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Jua', sans-serif;
+        }
+        .jua-font {
+            font-family: 'Jua', sans-serif;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.9); }
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <header class="w-full py-6 px-4 bg-white/80 backdrop-blur-md shadow-sm border-b border-indigo-100 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-2xl shadow-md flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl jua-font text-indigo-900 tracking-wide">행운의 제비뽑기</h1>
+                    <p class="text-xs text-slate-500 font-medium">22명의 학생 중 랜덤으로 한 명을 뽑아보세요!</p>
+                </div>
+            </div>
+            <button onclick="openSettings()" class="flex items-center space-x-1.5 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-xl text-sm transition-all duration-200 border border-indigo-200 shadow-sm active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>학생 명단 편집</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 flex-1 flex flex-col items-center justify-center w-full">
+        <div class="w-full max-w-xl bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-indigo-100 flex flex-col items-center relative overflow-hidden pulse-glow">
+            <!-- Background Decorative Elements -->
+            <div class="absolute -top-12 -right-12 w-36 h-36 bg-purple-200 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+            <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-indigo-200 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+
+            <div class="text-center mb-6 z-10">
+                <span class="inline-block px-3.5 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold tracking-wider uppercase mb-2">Random Picker</span>
+                <h2 id="status-title" class="text-slate-600 font-medium text-sm sm:text-base">버튼을 눌러 행운의 주인공을 뽑으세요!</h2>
+            </div>
+
+            <!-- Name Display Slot -->
+            <div class="w-full py-12 px-6 bg-gradient-to-r from-slate-50 via-indigo-50/50 to-slate-50 rounded-2xl border-2 border-dashed border-indigo-200 flex items-center justify-center mb-8 shadow-inner z-10 transition-all duration-300">
+                <span id="display-name" class="text-4xl sm:text-6xl jua-font text-indigo-600 tracking-wider transition-all duration-100 transform scale-100">대기 중...</span>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full z-10">
+                <button id="pick-button" onclick="startPicking()" class="flex-1 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="jua-font tracking-wide">제비뽑기 시작!</span>
+                </button>
+            </div>
+
+            <div class="mt-6 text-xs text-slate-400 z-10 flex items-center space-x-2">
+                <span>등록된 학생 수: <strong id="student-count" class="text-indigo-600 font-bold">22</strong>명</span>
+                <span>•</span>
+                <span id="mode-text" class="text-emerald-600 font-medium">중복 허용 모드</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl jua-font text-indigo-900 flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>학생 명단 관리 (22명 기본)</span>
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">줄바꿈(Enter)으로 학생 이름을 구분하여 입력하거나 수정하세요.</p>
+            
+            <div class="flex-1 mb-4">
+                <textarea id="students-textarea" class="w-full h-64 p-4 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none leading-relaxed font-medium text-slate-700 bg-slate-50" placeholder="학생 이름을 한 줄에 한 명씩 입력하세요..."></textarea>
+            </div>
+
+            <!-- Options -->
+            <div class="mb-4 flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div class="text-xs font-medium text-slate-600">뽑힌 학생 중복 제외하기</div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="exclude-checkbox" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="resetToDefault()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">기본 22명 복원</button>
+                <button onclick="saveStudents()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md transition">저장 및 적용</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full py-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white/50">
+        <p>행운의 제비뽑기 프로그램 • HTML5 & Tailwind CSS</p>
+    </footer>
+
+    <script>
+        // Default 22 students list
+        const defaultStudents = [
+            "김민준", "이지은", "박도윤", "서서윤", "정시우",
+            "아이유", "한지민", "송중기", "김태리", "남주혁",
+            "손흥민", "김연아", "유재석", "제니", "정국",
+            "카리나", "윈터", "장원영", "안유진", "차은우",
+            "페이커", "박보검"
+        ];
+
+        let students = [...defaultStudents];
+        let availableStudents = [...defaultStudents];
+        let isPicking = false;
+
+        // Load settings from local storage if available
+        function loadSettings() {
+            const saved = localStorage.getItem('picker_students');
+            if (saved) {
+                try {
+                    students = JSON.parse(saved);
+                } catch (e) {
+                    students = [...defaultStudents];
+                }
+            }
+            const savedExclude = localStorage.getItem('picker_exclude');
+            if (savedExclude !== null) {
+                document.getElementById('exclude-checkbox').checked = (savedExclude === 'true');
+            }
+            resetAvailableList();
+            updateCountDisplay();
+        }
+
+        function resetAvailableList() {
+            availableStudents = [...students];
+        }
+
+        function updateCountDisplay() {
+            document.getElementById('student-count').textContent = students.length;
+            const excludeChecked = document.getElementById('exclude-checkbox').checked;
+            document.getElementById('mode-text').textContent = excludeChecked ? '중복 제외 모드' : '중복 허용 모드';
+            document.getElementById('mode-text').className = excludeChecked ? 'text-purple-600 font-medium' : 'text-emerald-600 font-medium';
+        }
+
+        function openSettings() {
+            document.getElementById('students-textarea').value = students.join('\n');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function resetToDefault() {
+            students = [...defaultStudents];
+            document.getElementById('students-textarea').value = students.join('\n');
+        }
+
+        function saveStudents() {
+            const text = document.getElementById('students-textarea').value;
+            const lines = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            
+            if (lines.length === 0) {
+                alert('최소한 한 명 이상의 학생 이름을 입력해주세요.');
+                return;
+            }
+
+            students = lines;
+            const excludeChecked = document.getElementById('exclude-checkbox').checked;
+            localStorage.setItem('picker_students', JSON.stringify(students));
+            localStorage.setItem('picker_exclude', excludeChecked);
+
+            resetAvailableList();
+            updateCountDisplay();
+            closeSettings();
+            
+            // Reset display
+            document.getElementById('display-name').textContent = '준비 완료!';
+            document.getElementById('status-title').textContent = '설정이 저장되었습니다. 버튼을 눌러주세요!';
+        }
+
+        // Web Audio API Sound Effect Generator
+        function playBeep(freq, type, duration) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                // AudioContext might be blocked before user interaction
+            }
+        }
+
+        function playSuccessSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((note, index) => {
+                    setTimeout(() => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.value = note;
+                        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.3);
+                    }, index * 100);
+                });
+            } catch (e) {}
+        }
+
+        // Confetti effect trigger
+        function triggerConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // Main Picking Logic with Roulette Animation
+        function startPicking() {
+            if (isPicking) return;
+
+            const excludeChecked = document.getElementById('exclude-checkbox').checked;
+
+            if (excludeChecked && availableStudents.length === 0) {
+                alert('모든 학생이 한 번씩 뽑혔습니다! 명단을 초기화합니다.');
+                resetAvailableList();
+            }
+
+            const targetPool = excludeChecked ? availableStudents : students;
+
+            if (targetPool.length === 0) {
+                alert('등록된 학생이 없습니다. 명단을 확인해주세요.');
+                return;
+            }
+
+            isPicking = true;
+            const pickBtn = document.getElementById('pick-button');
+            const displayName = document.getElementById('display-name');
+            const statusTitle = document.getElementById('status-title');
+
+            pickBtn.disabled = true;
+            pickBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            statusTitle.textContent = '두근두근 추첨 중입니다... 🎲';
+
+            let counter = 0;
+            const totalSteps = 25; // Number of flickers before final choice
+            let intervalTime = 50;
+
+            function runAnimation() {
+                // Random name display during shuffling
+                const randomIndex = Math.floor(Math.random() * students.length);
+                displayName.textContent = students[randomIndex];
+                displayName.classList.add('scale-105');
+                setTimeout(() => displayName.classList.remove('scale-105'), 40);
+
+                playBeep(300 + (counter * 20), 'sine', 0.05);
+
+                counter++;
+                if (counter < totalSteps) {
+                    intervalTime += 10; // Gradually slow down
+                    setTimeout(runAnimation, intervalTime);
+                } else {
+                    // Final Selection
+                    const finalIndex = Math.floor(Math.random() * targetPool.length);
+                    const selectedStudent = targetPool[finalIndex];
+
+                    displayName.textContent = selectedStudent;
+                    statusTitle.textContent = '🎉 당첨을 축하합니다! 🎉';
+                    
+                    // Pop animation
+                    displayName.classList.add('scale-125', 'text-purple-600');
+                    setTimeout(() => displayName.classList.remove('scale-125'), 300);
+
+                    if (excludeChecked) {
+                        // Remove selected from available pool
+                        const indexInAvailable = availableStudents.indexOf(selectedStudent);
+                        if (indexInAvailable > -1) {
+                            availableStudents.splice(indexInAvailable, 1);
+                        }
+                    }
+
+                    playSuccessSound();
+                    triggerConfetti();
+
+                    isPicking = false;
+                    pickBtn.disabled = false;
+                    pickBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            runAnimation();
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadSettings();
+        };
+    </script>
+</body>
+</html>
